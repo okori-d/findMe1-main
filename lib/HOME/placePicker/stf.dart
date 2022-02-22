@@ -77,21 +77,11 @@ class _MapViewState extends State<MapView> {
   List<LatLng> polylineCoordinates = [];
   late PolylinePoints polylinePoints;
 
-  /*@override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _getCurrentLocation();
-    polylinePoints = PolylinePoints();
-    
-  }*/
-
-  
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static final Marker _DICTSofficesMarker = Marker(
-    markerId: MarkerId('_place1'),
+    markerId: MarkerId('DICTS'),
     infoWindow: InfoWindow(
       title: 'DICTS Offices',
       snippet: 'Student portal and muele issues',
@@ -111,7 +101,7 @@ class _MapViewState extends State<MapView> {
   );*/
 
   static final Marker _poolCourtMarker = Marker(
-    markerId: MarkerId('_place1'),
+    markerId: MarkerId('poolCourt'),
     infoWindow: InfoWindow(
       title: 'Pool Basketball court',
       snippet: 'Available for basketball games',
@@ -120,7 +110,7 @@ class _MapViewState extends State<MapView> {
     position: LatLng(0.334608, 32.569307),
   );
   static final Marker _swimmingPoolMarker = Marker(
-    markerId: MarkerId('_place1'),
+    markerId: MarkerId('swimmingPool'),
     infoWindow: InfoWindow(
       title: 'Swimming pool',
       snippet: 'Free for Makerere students',
@@ -140,54 +130,6 @@ class _MapViewState extends State<MapView> {
   );
 
 
-  Widget _textField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String label,
-    required String hint,
-    required double width,
-    required Icon prefixIcon,
-    Widget? suffixIcon,
-    required Function(String) locationCallback,
-  }) {
-    return Container(
-      width: width * 0.8,
-      child: TextField(
-        onChanged: (value) {
-          locationCallback(value);
-        },
-        controller: controller,
-        focusNode: focusNode,
-        decoration: new InputDecoration(
-          prefixIcon: prefixIcon,
-          suffixIcon: suffixIcon,
-          labelText: label,
-          filled: true,
-          fillColor: Colors.transparent,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-            borderSide: BorderSide(
-              color: Colors.grey.shade400,
-              width: 2,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-            borderSide: BorderSide(
-              color: Colors.blue.shade300,
-              width: 2,
-            ),
-          ),
-          contentPadding: EdgeInsets.all(15),
-          hintText: hint,
-        ),
-      ),
-    );
-  }
 
   // Method for retrieving the current location
   _getCurrentLocation() async {
@@ -230,19 +172,20 @@ class _MapViewState extends State<MapView> {
     }
   }
 
-  
+  MapType _currentMapType = MapType.normal;  
   
     @override
   void initState() {
     super.initState();
     _getCurrentLocation();
-    //polylinePoints = PolylinePoints();
+    polylinePoints = PolylinePoints();
   }
 
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
+    
     return Container(
       height: height,
       width: width,
@@ -277,8 +220,7 @@ class _MapViewState extends State<MapView> {
               ),
         key: _scaffoldKey,
         body: Stack(
-          children: <Widget>[
-
+          children: <Widget>[ 
             
             // Map View
             GoogleMap(
@@ -287,8 +229,9 @@ class _MapViewState extends State<MapView> {
                 _SenateBuildingMarker,
                 //_maryStuartGymMarker,
                 Marker(
-                  markerId: const MarkerId('_place1'),
+                  markerId: const MarkerId('maryStuartGym'),
                   onTap: () {
+                    //_toggleMapType();
 
                     //"Hey" to test interaction with the marker.
                       //print('Hey');
@@ -313,14 +256,16 @@ class _MapViewState extends State<MapView> {
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
               polylines: _polylines,
-              mapType: MapType.normal,
+              mapType: _currentMapType,
               zoomGesturesEnabled: true,
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 mapController = controller;
                 setPolylines();
               },
+              
             ),
+            
             // Show zoom buttons
             SafeArea(
               child: Padding(
@@ -413,7 +358,7 @@ class _MapViewState extends State<MapView> {
   void setPolylines() async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       'AIzaSyCX7vI-UAjpQsj4o2cjlm4VHKlwntoFXRs',
-      PointLatLng(_currentPosition.latitude, _currentPosition.longitude),//origin position
+      const PointLatLng(0.333192, 32.569493),//origin position
       const PointLatLng(0.330588, 32.567492),//destination position.
       );
       
@@ -425,13 +370,23 @@ class _MapViewState extends State<MapView> {
         setState(() {
           _polylines.add(
             Polyline(
+              startCap: Cap.roundCap,
+              endCap: Cap.roundCap,
+              jointType: JointType.round,
               width: 5,
               polylineId: const PolylineId('polyline'),
               color: Colors.blueAccent.shade200.withOpacity(0.8),
               points: polylineCoordinates,
+              geodesic: true,
             )
           );
         });
       }
+  }
+
+  void _toggleMapType() {
+    setState(() {
+      _currentMapType = (_currentMapType == MapType.normal) ? MapType.satellite: MapType.normal;
+    });
   }
 }
