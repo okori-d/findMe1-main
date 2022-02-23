@@ -48,6 +48,7 @@ dependencies:
   alan_voice: 3.0.0
   flutter_geofence: ^0.4.2
   flutter_local_notifications: ^8.2.0
+  overlay_support: ^1.2.1
 
 dev_dependencies:
   flutter_test:

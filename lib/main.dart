@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_geofence/geofence.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 import 'package:flutter/material.dart' as TextTheme;
+import 'package:overlay_support/overlay_support.dart';
 
 import 'HOME/Splash.dart';
 
@@ -18,6 +20,8 @@ void main() async {
     User(id: 'jecxi256'),
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiamVjeGkyNTYifQ.XDxtfrT1oPmaIipKGb0O4d0KbHZ_zs0iWT9VUzL-fC0',
   );
+  WidgetsFlutterBinding.ensureInitialized();
+    // Geofence.initialize();
 
   runApp(MyApp(
     client: client,
@@ -41,30 +45,32 @@ class MyApp extends StatelessWidget {
     // final theme = ThemeData(
     //   primarySwatch: Colors.green,
     // );
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Loading Animation',
-      theme: ThemeData(
-        // Define the default brightness and colors.
-        brightness: Brightness.dark,
-        primaryColor: Colors.lightGreen[800],
-
-        // Define the default font family.
-        fontFamily: 'Georgia',
-
-        // Define the default `TextTheme`. Use this to specify the default
-        // text styling for headlines, titles, bodies of text, and more.
-        textTheme: const TextTheme.TextTheme(
-          headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-          headline6: TextStyle(fontSize: 20.0, fontStyle: FontStyle.italic),
-          bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+    return OverlaySupport.global(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Loading Animation',
+        theme: ThemeData(
+          // Define the default brightness and colors.
+          brightness: Brightness.dark,
+          primaryColor: Colors.lightGreen[800],
+    
+          // Define the default font family.
+          fontFamily: 'Georgia',
+    
+          // Define the default `TextTheme`. Use this to specify the default
+          // text styling for headlines, titles, bodies of text, and more.
+          textTheme: const TextTheme.TextTheme(
+            headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+            headline6: TextStyle(fontSize: 20.0, fontStyle: FontStyle.italic),
+            bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+          ),
         ),
-      ),
-      home: const HomePage(),
-      //   theme: ThemeData(primarySwatch: Colors.green),
-      builder: (context, child) => StreamChat(
-        client: client,
-        child: child,
+        home: const HomePage(),
+        //   theme: ThemeData(primarySwatch: Colors.green),
+        builder: (context, child) => StreamChat(
+          client: client,
+          child: child,
+        ),
       ),
     );
   }
