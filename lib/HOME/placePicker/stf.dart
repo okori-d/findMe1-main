@@ -12,10 +12,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:math' show cos, sqrt, asin;
+import 'Search.dart';
 
 import 'package:overlay_support/overlay_support.dart';
 
-void main() => runApp(MapViewPage());
+void main(){
+  
+}
 
 class MapViewPage extends StatelessWidget {
   // Light Theme
@@ -61,8 +64,10 @@ class _MapViewState extends State<MapView> {
   late GoogleMapController mapController;
 
   late Position _currentPosition;
+  late Position _destinationPosition;
   String _currentAddress = '';
   Iterable<Marker> _markers = [];
+  late Marker _destination;
   int placed = PlaceDetails.places.length;
   
   final startAddressController = TextEditingController();
@@ -120,7 +125,7 @@ class _MapViewState extends State<MapView> {
         _startAddress = _currentAddress;
       });
     } catch (e) {
-      // print(e);
+      print(e);
     }
   }
 
@@ -132,16 +137,7 @@ class _MapViewState extends State<MapView> {
     _getCurrentLocation();
     polylinePoints = PolylinePoints();
     
-    /**allow Geofence to use your phone location */
-    Geofence.requestPermissions();
-    Geofence.startListening(GeolocationEvent.entry, (entry) {
-      showNotification("Entry of a georegion Welcome to: ${entry.id}");
-    });
 
-    // Geofence.startListeningForLocationChanges();
-    Geofence.backgroundLocationUpdated.stream.listen((event) { 
-      showNotification("You moved ${event.latitude} and ${event.longitude}");
-    });
     //***Generating the iterables to mapped as markers */
     Iterable<Marker> placeMarker = Iterable.generate(placed,(index){
     return  Marker(
@@ -150,7 +146,7 @@ class _MapViewState extends State<MapView> {
       title: PlaceDetails.places[index]['title'],
       snippet: PlaceDetails.places[index]['snippet'],
     ),
-    icon: BitmapDescriptor.defaultMarker,
+    icon: PlaceDetails.places[index]['icon'],
     position: PlaceDetails.places[index]['position'],
       onTap: () {
                 var geolocation =  Geolocation(latitude:PlaceDetails.places[index]['position'].latitude,longitude: PlaceDetails.places[index]['position'].longitude, id: PlaceDetails.places[index]['id'], radius:12);
@@ -158,6 +154,18 @@ class _MapViewState extends State<MapView> {
                   },
   );
   });
+  
+        /**allow Geofence to use your phone location */
+    Geofence.requestPermissions();
+    Geofence.startListening(GeolocationEvent.entry, (entry) {
+      showNotification("You are near: ${entry.id}. Check map to view it.");
+    });
+
+    // Geofence.startListeningForLocationChanges();
+    Geofence.backgroundLocationUpdated.stream.listen((event) { 
+      showNotification("You moved ${event.latitude} and ${event.longitude}");
+    });
+
 setState(() {
   _markers = placeMarker;
 });
@@ -240,14 +248,24 @@ setState(() {
                   ),
                 ),
               ),
+              actions: [
+                IconButton(onPressed: () {
+                  showSearch(
+                    context: context, 
+                    delegate: customSearchDelegate(),
+                    );
+                },
+                 icon: Icon(Icons.search))
+              ],
               ),
+              drawer: Drawer(),
         key: _scaffoldKey,
         body: Stack(
           children: <Widget>[ 
-            
             // Map View
             GoogleMap(
               markers: Set.from(_markers),
+              onLongPress: _addMarker,
               initialCameraPosition: _initialLocation,
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
@@ -257,7 +275,7 @@ setState(() {
               zoomControlsEnabled: false,
               onMapCreated: (GoogleMapController controller) {
                 mapController = controller;
-                setPolylines();
+                // setPolylines();
               },
               
             ),
@@ -337,6 +355,7 @@ setState(() {
                                   _currentPosition.longitude,
                                 ),
                                 zoom: 18.0,
+                                tilt: 60,
                               ),
                             ),
                           );
@@ -352,11 +371,11 @@ setState(() {
       ),
     );
   }
-  void setPolylines() async {
+  void setPolylines(LatLng pos) async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       'AIzaSyCX7vI-UAjpQsj4o2cjlm4VHKlwntoFXRs',
-      const PointLatLng(0.333192, 32.569493),//origin position
-      const PointLatLng(0.330588, 32.567492),//destination position.
+      PointLatLng(_currentPosition.latitude, _currentPosition.longitude),//origin position
+      PointLatLng(pos.latitude, pos.longitude),//destination position.
       );
       
       if (result.status == 'OK') {
@@ -380,6 +399,28 @@ setState(() {
         });
       }
   }
+  void _addMarker(LatLng pos) {
+    
+    
+    setState(() {
+    //   _destination = Marker(
+    //     markerId: MarkerId('destination'),
+    //     infoWindow: InfoWindow(title: 'Go here'),
+    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
+    //     position: pos,
+    //   );
+    //  var p = _markers.toList();
+    //  p.add(_destination);
+
+      var dat = {'id':'destination','title':'Go here','snippet':'','icon': BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),'position':LatLng(pos.latitude, pos.longitude,)};
+
+      PlaceDetails.places.add(dat);
+      showNotification("You have added your destination");
+
+      setPolylines(LatLng(pos.latitude, pos.longitude));
+    });
+    //PlaceDetails.places.remove(dat);
+  }
 
   void _toggleMapType() {
     setState(() {
@@ -388,7 +429,7 @@ setState(() {
   }
   @override
   void dispose() {
-    
+
     super.dispose();
     
     Geofence.removeAllGeolocations();

@@ -1,3 +1,5 @@
+// ignore_for_file: library_prefixes
+
 import 'dart:async';
 import 'dart:math';
 
@@ -21,7 +23,7 @@ void main() async {
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiamVjeGkyNTYifQ.XDxtfrT1oPmaIipKGb0O4d0KbHZ_zs0iWT9VUzL-fC0',
   );
   WidgetsFlutterBinding.ensureInitialized();
-    // Geofence.initialize();
+    Geofence.initialize();
 
   runApp(MyApp(
     client: client,
@@ -32,7 +34,25 @@ void main() async {
     ),
   );
 }
-
+showNotification(String msg){
+    showOverlayNotification((context){
+        return Padding(
+          padding: const EdgeInsets.only(top:58.0),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            child: Card(
+              child: ListTile(
+                title: Text(msg),
+                leading: CircleAvatar(child: Icon(Icons.notifications),),
+                trailing: IconButton(onPressed: (){
+                 
+                }, icon: Icon(Icons.close)),
+                ),
+              ),
+          ),
+        );
+    });
+  }
 class MyApp extends StatelessWidget {
   const MyApp({
     Key? key,
